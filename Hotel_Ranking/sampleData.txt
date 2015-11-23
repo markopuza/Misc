@@ -1,0 +1,24 @@
+12
+900 wifi,familyroom,petfriendly,restaurant,pool
+810 petfriendly,restaurant,pool
+750 familyroom,petfriendly,restaurant,pool
+720 wifi,restaurant
+630 wifi,familyroom,restaurant,pool
+600 familyroom,petfriendly,restaurant
+450 wifi,restaurant,pool
+390 wifi,petfriendly,restaurant
+300 wifi,familyroom,restaurant
+240 wifi,restaurant,pool,bar
+120 wifi,restaurant,pool,bar,familyroom
+90 wifi,restaurant,pool,bar,familyroom
+9
+wifi,familyroom,pool,restaurant,petfriendly
+wifi,bar,pool,restaurant
+wifi,familyroom,restaurant,petfriendly
+wifi,bar,pool,restaurant
+wifi,familyroom,restaurant,petfriendly
+bar,pool,restaurant
+wifi,bar,pool,restaurant
+wifi,restaurant,petfriendly
+wifi,familyroom,restaurant,petfriendly
+

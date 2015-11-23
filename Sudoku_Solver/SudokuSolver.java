@@ -1,0 +1,222 @@
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Scanner;
+
+public class p96SudokuSolver {
+
+	public static void main(String[] args) throws IOException {
+		File f = new File(
+				"\\p096_sudoku.txt");
+		Scanner fr = new Scanner(new FileReader(f));
+		int noOfSudoku = 50;
+
+		int sum = 0;
+		for (int i = 0; i < noOfSudoku; i++) {
+			fr.nextLine(); // text: Grid #
+			String[] rows = new String[9];
+			for (int j = 0; j < 9; j++) {
+				rows[j] = (fr.nextLine());
+			}
+			int[][] g = new int[9][9];
+			for (int k = 0; k < 9; k++) {
+				for (int j = 0; j < 9; j++) {
+					g[k][j] = Integer.parseInt("" + rows[k].charAt(j));
+				}
+			}
+
+			Sudoku sudoku = new Sudoku(g);
+			sudoku.solve();
+			sum += sudoku.getSampleNumber();
+		}
+		System.out.println("The result is " + sum + ".");
+		fr.close();
+	}
+
+	static class Sudoku {
+
+		private HashSet<Integer> all = new HashSet<Integer>();
+		private int[][] game = new int[9][9];
+
+		public Sudoku() {
+			for (int i = 1; i <= 9; i++) {
+				all.add(i);
+			}
+		}
+
+		public Sudoku(int[][] r) {
+			for (int i = 1; i <= 9; i++) {
+				all.add(i);
+			}
+			this.game = r;
+		}
+
+		public int getSampleNumber() {
+			return 100*game[0][0] + 10*game[0][1] + game[0][2];
+		}
+		
+		public Sudoku copy(int i, int j, int num) {
+			int[][] gameCopy = new int[9][9];
+			for (int k = 0; k < 9; k++) {
+				for (int l = 0; l < 9; l++) {
+					gameCopy[k][l] = this.game[k][l];
+				}
+			}
+			gameCopy[i][j] = num;
+			Sudoku s = new Sudoku(gameCopy);
+			return s;
+		}
+
+		@SuppressWarnings({ "unchecked" })
+		private HashSet<Integer> missingInRow(int row) {
+			HashSet<Integer> in = new HashSet<Integer>();
+			HashSet<Integer> allCopy = (HashSet<Integer>) all.clone();
+			for (int j = 0; j < 9; j++) {
+				int n;
+				if ((n = game[row][j]) != 0) {
+					in.add(n);
+				}
+			}
+			allCopy.removeAll(in);
+			return (allCopy);
+		}
+
+		@SuppressWarnings({ "unchecked" })
+		private HashSet<Integer> missingInCol(int col) {
+			HashSet<Integer> in = new HashSet<Integer>();
+			HashSet<Integer> allCopy = (HashSet<Integer>) all.clone();
+			for (int j = 0; j < 9; j++) {
+				int n;
+				if ((n = game[j][col]) != 0) {
+					in.add(n);
+				}
+			}
+			allCopy.removeAll(in);
+			return (allCopy);
+		}
+
+		@SuppressWarnings({ "unchecked" })
+		private HashSet<Integer> missingInRegion(int regX, int regY) {
+			// regX, regY are coordinates of a region in sudoku.
+			HashSet<Integer> in = new HashSet<Integer>();
+			HashSet<Integer> allCopy = (HashSet<Integer>) all.clone();
+			int n;
+			for (int i = 3 * regX; i <= 3 * regX + 2; i++) {
+				for (int j = 3 * regY; j <= 3 * regY + 2; j++) {
+					if ((n = game[i][j]) != 0) {
+						in.add(n);
+					}
+				}
+			}
+			allCopy.removeAll(in);
+			return (allCopy);
+		}
+
+		// all possibilities in a given game field
+		private HashSet<Integer> possible(int i, int j) {
+			HashSet<Integer> region = missingInRegion(i / 3, j / 3);
+			region.retainAll(missingInRow(i));
+			region.retainAll(missingInCol(j));
+			return region;
+		}
+
+		public String toString() {
+			String result = "";
+			for (int i = 0; i < 9; i++) {
+				String row = "" + game[i][0];
+				for (int j = 1; j < 9; j++) {
+					row += "|" + game[i][j];
+				}
+				result += "\n" + row;
+			}
+			return result.substring(1, result.length());
+		}
+
+		public boolean isSolvable() {
+			for (int i = 0; i < 9; i++) {
+				for (int j = 0; j < 9; j++) {
+					if (game[i][j] == 0) {
+						if (possible(i, j).size() < 1)
+							return false;
+					}
+				}
+			}
+			return true;
+		}
+
+		public boolean isAlreadySolved() {
+			for (int i = 0; i < 9; i++) {
+				for (int j = 0; j < 9; j++) {
+					if (game[i][j] == 0)
+						return false;
+				}
+			}
+			return true;
+		}
+
+		public boolean solve() {
+			// base cases
+			if (!isSolvable()) return false;
+			if (this.isAlreadySolved())	return true;
+
+
+			// fills in all nums that are already determined by row/column/region
+			while (true) {
+				boolean didNothing = true;
+				Sudoku c = new Sudoku();
+				for (int i = 0; i < 9; i++) {
+					for (int j = 0; j < 9; j++) {
+						if (game[i][j] == 0 && possible(i, j).size() == 1) {
+							didNothing = false;
+							for (int onlyOne : possible(i, j)) {
+								c = this.copy(i, j, onlyOne);
+							}
+							boolean good = c.solve();
+							if (good) {
+								this.game = c.game;
+							}
+							return good;
+						}
+					}
+				}
+				if (didNothing) break;
+			}
+			
+			
+			
+			/** 
+			 * guessing and recursively trying to solve our guesses
+			**/
+			
+			
+			// choosing the best guess
+			int bestI = 0;
+			int bestJ = 0;
+			int possibilities = 10;
+
+			for (int i = 0; i < 9; i++) {
+				for (int j = 0; j < 9; j++) {
+					if (game[i][j] == 0) {
+						if (possible(i, j).size() < possibilities) {
+							bestI = i;
+							bestJ = j;
+						}
+					}
+				}
+			}
+
+			// guessing
+			Sudoku s;
+			for (int p : possible(bestI, bestJ)) {
+				s = copy(bestI, bestJ, p);
+				boolean good = s.solve();
+				if (good) {
+					this.game = s.game;
+					return true;
+				}
+			}
+			return false;
+		}
+	}
+}
